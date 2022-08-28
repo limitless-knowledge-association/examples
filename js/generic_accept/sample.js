@@ -1,6 +1,9 @@
 // Demonstrate the generic accept facility
 
-import {generic_accept} from "./accept.js";
+import {class_for,
+        generic_accept,
+        provide_generic_visitor
+       }from "./accept.js";
 
 // Toy is a trivial composite. Box is its composite class that
 // holds references to Toy, including other boxes and the leaves.
@@ -32,6 +35,12 @@ class Box extends Toy {
         return generic_accept(this, visitor,
                               {intention:'content',
                                vals:this.toys});
+    }
+}
+
+class SpecialBox extends Box {
+    constructor(toys){
+        super(toys);
     }
 }
 
@@ -85,7 +94,7 @@ class Doll extends Toy {
 const stuff = new Box([
     new Book("Lord of the Rings"),
     new Book("Design Patterns"),
-    new Box([
+    new SpecialBox([
         new Ball("small", "red"),
         new Ball("small", "green"),
         new Doll("large", "green hair and a blue shirt"),
@@ -93,6 +102,10 @@ const stuff = new Box([
                     "How to Train Your Dragon")
     ]),
 ]);
+
+// Generic visitor
+console.log("*** GENERIC VISITOR ***");
+stuff.accept(provide_generic_visitor());
 
 // Show each toy
 class Visitor_1 {
@@ -127,7 +140,7 @@ class NestingDemo {
         console.log(`${indent}${s}`);
     }
     enter_Toy(toy, context) {
-        this._print(`Entered toy with context ${context}:${toy.describe()}`);
+        this._print(`EnteredToy (${class_for(toy).name}) with context ${context}:${toy.describe()}`);
     }
     exit_Toy(toy, context) {
         this._print(`Exited toy with context ${context}:${toy.describe()}`);

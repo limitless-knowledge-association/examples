@@ -161,3 +161,31 @@ export function generic_accept(obj, visitor, nested_raw=[]) {
     // Done!
     return visitor;
 }
+
+// This function provides a visitor object that produces a complete report
+// of EVERY call made by the generic_accept for a particular case (a real
+// object). It does this by responding to the calls dynamically, always
+// providing whatever visit function is requested.
+export function provide_generic_visitor() {
+    return new Proxy(
+        // The instances holds a map of object->counter to show identity
+        {
+            instances:new Map(),
+            counter:0
+        },
+        // Handler, which just returns a trivial function that prints
+        // the details of the caller when called
+        {
+            get(target, prop, receiver) {
+                return (obj, intention) => {
+                    let counter = target.instances.get(obj);
+                    if( undefined === counter ) {
+                        counter = ++target.counter;
+                        target.instances.set(obj, counter);
+                    }
+                    const o = `${class_for(obj).name}(${counter})`;
+                    console.log(`${prop}(${o}, ${intention})`);
+                }
+            }
+        });
+}
